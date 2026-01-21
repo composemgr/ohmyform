@@ -1,0 +1,54 @@
+# nginx proxy address - http://172.17.0.1:8096
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "5m"
+    max-file: "1"
+
+services:
+  ohmyform:
+    image: ohmyform/ohmyform:latest
+    container_name: ohmyform-app
+    restart: unless-stopped
+    logging: *default-logging
+    networks:
+      - ohmyform
+    ports:
+      - "8096:3000"
+    environment:
+      TZ: ${TZ:-America/New_York}
+    volumes:
+      - ./rootfs/data/ohmyform:/data
+      - ./rootfs/config/ohmyform:/config
+    depends_on:
+      - ohmyform-db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ohmyform-db:
+    image: mongo:7
+    container_name: ohmyform-db
+    restart: unless-stopped
+    logging: *default-logging
+    networks:
+      - ohmyform
+    environment:
+      TZ: ${TZ:-America/New_York}
+      MONGO_INITDB_DATABASE: ${DB_CREATE_DATABASE_NAME:-ohmyform}
+      MONGO_INITDB_ROOT_USERNAME: ${DB_ADMIN_NAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_ADMIN_PASS:-changeme_root_password}
+    volumes:
+      - ./rootfs/db/mongodb/ohmyform:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  ohmyform:
+    external: false
