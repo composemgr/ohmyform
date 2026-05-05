@@ -19,8 +19,8 @@ services:
     environment:
       TZ: ${TZ:-America/New_York}
     volumes:
-      - ./rootfs/data/ohmyform:/data
-      - ./rootfs/config/ohmyform:/config
+      - ./volumes/data/ohmyform:/data
+      - ./volumes/config/ohmyform:/config
     depends_on:
       - ohmyform-db
     healthcheck:
@@ -42,7 +42,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${DB_ADMIN_NAME:-root}
       MONGO_INITDB_ROOT_PASSWORD: ${DB_ADMIN_PASS:-changeme_root_password}
     volumes:
-      - ./rootfs/data/db/mongodb/ohmyform:/data/db
+      - ./volumes/data/db/mongodb/ohmyform:/data/db
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 30s
