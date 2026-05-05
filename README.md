@@ -50,9 +50,9 @@ See `docker-compose.yaml` for complete list of configurable options.
 
 ## 📂 Volumes
 
-- `./rootfs/data/ohmyform` - Data storage
-- `./rootfs/config/ohmyform` - Data storage
-- `./rootfs/data/db/mongodb/ohmyform` - Data storage
+- `./volumes/data/ohmyform` - Data storage
+- `./volumes/config/ohmyform` - Data storage
+- `./volumes/data/db/mongodb/ohmyform` - Data storage
 
 ## 🔐 Security
 
