@@ -22,7 +22,7 @@ services:
       - "172.17.0.1:8096:3000"
     environment:
       TZ: ${TZ:-America/New_York}
-      MONGO_URI: mongodb://${DB_ADMIN_USER:-root}:${DB_ADMIN_PASS:-changeme_admin_password}@ohmyform-db:27017/${DB_CREATE_DATABASE_NAME:-ohmyform}
+      MONGO_URI: mongodb://${DB_ADMIN_NAME:-root}:${DB_ADMIN_PASS:-changeme_admin_password}@ohmyform-db:27017/${DB_CREATE_DATABASE_NAME:-ohmyform}
       SECRET: ${APP_SECRET_KEY:-changeme_secret_key_min_32_chars}
       CREATE_ADMIN: "TRUE"
       ADMIN_EMAIL: ${APP_ADMIN_USER:-admin}@${BASE_DOMAIN_NAME:-example.com}
@@ -67,7 +67,7 @@ services:
     environment:
       TZ: ${TZ:-America/New_York}
       MONGO_INITDB_DATABASE: ${DB_CREATE_DATABASE_NAME:-ohmyform}
-      MONGO_INITDB_ROOT_USERNAME: ${DB_ADMIN_USER:-root}
+      MONGO_INITDB_ROOT_USERNAME: ${DB_ADMIN_NAME:-root}
       MONGO_INITDB_ROOT_PASSWORD: ${DB_ADMIN_PASS:-changeme_admin_password}
       CONTAINER_NAME: ohmyform-db
     volumes:
