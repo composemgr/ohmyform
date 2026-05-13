@@ -80,6 +80,7 @@ services:
 
 networks:
   ohmyform:
+    name: ohmyform
     external: false
   proxy:
     external: true
