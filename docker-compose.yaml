@@ -1,5 +1,6 @@
 # nginx proxy address - http://172.17.0.1:8096
 
+name: ohmyform
 x-logging: &default-logging
   driver: json-file
   options:
@@ -9,15 +10,21 @@ x-logging: &default-logging
 services:
   ohmyform:
     image: ohmyform/ohmyform:latest
+    pull_policy: always
     container_name: ohmyform-app
-    restart: unless-stopped
+    restart: always
     logging: *default-logging
     networks:
       - ohmyform
     ports:
-      - "8096:3000"
+      - "172.17.0.1:8096:3000"
     environment:
       TZ: ${TZ:-America/New_York}
+      MONGO_URI: mongodb://${DB_ADMIN_USER:-root}:${DB_ADMIN_PASS:-changeme_admin_password}@ohmyform-db:27017/${DB_CREATE_DATABASE_NAME:-ohmyform}
+      SECRET: ${APP_SECRET_KEY:-changeme_secret_key_min_32_chars}
+      CREATE_ADMIN: "TRUE"
+      ADMIN_EMAIL: ${APP_ADMIN_USER:-admin}@${BASE_DOMAIN_NAME:-example.com}
+      ADMIN_PASSWORD: ${APP_ADMIN_PASS:-changeme_admin_password}
     volumes:
       - ./volumes/data/ohmyform:/data
       - ./volumes/config/ohmyform:/config
@@ -30,17 +37,18 @@ services:
       retries: 3
 
   ohmyform-db:
-    image: mongo:7
+    image: mongo:latest
+    pull_policy: always
     container_name: ohmyform-db
-    restart: unless-stopped
+    restart: always
     logging: *default-logging
     networks:
       - ohmyform
     environment:
       TZ: ${TZ:-America/New_York}
       MONGO_INITDB_DATABASE: ${DB_CREATE_DATABASE_NAME:-ohmyform}
-      MONGO_INITDB_ROOT_USERNAME: ${DB_ADMIN_NAME:-root}
-      MONGO_INITDB_ROOT_PASSWORD: ${DB_ADMIN_PASS:-changeme_root_password}
+      MONGO_INITDB_ROOT_USERNAME: ${DB_ADMIN_USER:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_ADMIN_PASS:-changeme_admin_password}
     volumes:
       - ./volumes/data/db/mongodb/ohmyform:/data/db
     healthcheck:
