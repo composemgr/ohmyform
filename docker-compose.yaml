@@ -16,6 +16,8 @@ services:
     logging: *default-logging
     networks:
       - ohmyform
+      - proxy
+      - cloudflare
     ports:
       - "172.17.0.1:8096:3000"
     environment:
@@ -25,6 +27,8 @@ services:
       CREATE_ADMIN: "TRUE"
       ADMIN_EMAIL: ${APP_ADMIN_USER:-admin}@${BASE_DOMAIN_NAME:-example.com}
       ADMIN_PASSWORD: ${APP_ADMIN_PASS:-changeme_admin_password}
+      CONTAINER_NAME: ohmyform-app
+      HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
     volumes:
       - ./volumes/data/ohmyform:/data
       - ./volumes/config/ohmyform:/config
@@ -35,6 +39,22 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    labels:
+      - 'traefik.enable=true'
+      - 'cloudflare.enable=true'
+      - 'traefik.docker.network=proxy'
+      - 'cloudflare.service=http://ohmyform-app:3000'
+      - 'cloudflare.hostname=ohmyform.${CLOUDFLARE_ZONE_NAME:-}'
+      - 'traefik.http.routers.ohmyform-app.entrypoints=http'
+      - 'traefik.http.routers.ohmyform-app-secure.tls=true'
+      - 'traefik.http.routers.ohmyform-app.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.middlewares.ohmyform-app-https-redirect.redirectscheme.scheme=https'
+      - 'traefik.http.routers.ohmyform-app.middlewares=ohmyform-app-https-redirect'
+      - 'traefik.http.routers.ohmyform-app-secure.entrypoints=https'
+      - 'traefik.http.routers.ohmyform-app-secure.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.routers.ohmyform-app-secure.tls.certresolver=cloudflare'
+      - 'traefik.http.routers.ohmyform-app-secure.service=ohmyform-app'
+      - 'traefik.http.services.ohmyform-app.loadbalancer.server.port=3000'
 
   ohmyform-db:
     image: mongo:latest
@@ -49,6 +69,7 @@ services:
       MONGO_INITDB_DATABASE: ${DB_CREATE_DATABASE_NAME:-ohmyform}
       MONGO_INITDB_ROOT_USERNAME: ${DB_ADMIN_USER:-root}
       MONGO_INITDB_ROOT_PASSWORD: ${DB_ADMIN_PASS:-changeme_admin_password}
+      CONTAINER_NAME: ohmyform-db
     volumes:
       - ./volumes/data/db/mongodb/ohmyform:/data/db
     healthcheck:
@@ -60,3 +81,7 @@ services:
 networks:
   ohmyform:
     external: false
+  proxy:
+    external: true
+  cloudflare:
+    external: true
